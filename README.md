@@ -23,7 +23,7 @@
   <a href="https://github.com/pickywawa/cybersoap/issues">Signaler un bug</a>
 </p>
 
-![CyberSoap](docs/assets/screen-request.png)
+![Démo CyberSoap : import WSDL, remplissage avec F2, autocomplétion, envoi, runner et thèmes](docs/assets/demo.gif)
 
 ## Sommaire
 
@@ -68,11 +68,13 @@ SoapUI est puissant mais lourd ; les clients REST modernes gèrent mal SOAP. Cyb
 | 🔐 **Auth** | Basic, Bearer, WS-Security UsernameToken (Text / Digest + Timestamp). |
 | 📁 **Fichiers, pas de BDD** | 1 collection = 1 dossier, 1 requête = 1 fichier JSON. |
 | 🔄 **Mises à jour auto** | Depuis GitHub Releases. |
-| 🎨 **Thèmes & langues** | Dracula (défaut), Cyberdog Neon, Synthwave 84, Matrix, Nord Ice, Daylight · Français / English. |
+| 🎨 **Thèmes & langues** | 10 thèmes : Dracula (défaut), Cyberdog Neon, Synthwave 84, Matrix, Nord Ice en sombre ; Daylight, Alucard, Solar Flare, Frost Byte, Sakura Neon en clair · Français / English. |
 
-| Autocomplétion | Runner | Environnements |
+| Requête & réponse | Autocomplétion | Variables & environnement actif |
 |---|---|---|
-| ![](docs/assets/screen-autocomplete.png) | ![](docs/assets/screen-runner.png) | ![](docs/assets/screen-environments.png) |
+| ![](docs/assets/screen-request.png) | ![](docs/assets/screen-autocomplete.png) | ![](docs/assets/screen-forecast.png) |
+| **Runner (thème Cyberdog Neon)** | **Environnements globaux** | **Thème clair (Alucard)** |
+| ![](docs/assets/screen-runner.png) | ![](docs/assets/screen-environments.png) | ![](docs/assets/screen-light.png) |
 
 ## Installation
 
@@ -106,7 +108,7 @@ Sur certaines distributions, les AppImage nécessitent `libfuse2` (`sudo apt ins
 
 ## Prise en main
 
-1. Cliquez sur **Importer un WSDL** (écran d'accueil ou icône ⬇ en haut).
+1. Cliquez sur **Importer un WSDL** (écran d'accueil, ou icône ⬇ en haut de la liste des collections).
 2. Collez l'URL du WSDL (ex. `https://hote/service?wsdl`) ou choisissez un fichier, puis **Analyser** pour voir les opérations.
 3. **Générer la collection** : une requête est créée pour chaque opération, avec l'URL du endpoint et le SOAPAction.
 4. Ouvrez une requête, remplacez les `?` par vos valeurs (<kbd>F2</kbd> saute au suivant), puis **Envoyer** (<kbd>⌘/Ctrl</kbd> + <kbd>Entrée</kbd>).
@@ -145,9 +147,9 @@ Les variables s'utilisent avec la syntaxe `{{nom}}` dans l'URL, le SOAPAction, l
 
 | Niveau | Où les définir | Portée |
 |---|---|---|
-| Globales | ⚙ à côté du sélecteur d'environnement → **Variables globales** | toutes les collections |
+| Globales | icône à droite du sélecteur d'environnement (barre du haut) → **Variables globales** | toutes les collections |
 | Collection | Paramètres de la collection → **Variables** | la collection |
-| Environnement | ⚙ à côté du sélecteur → un environnement (`dev`, `recette`, `prod`…) | toutes les collections, quand il est actif |
+| Environnement | même fenêtre → un environnement (`dev`, `recette`, `prod`…) | toutes les collections, quand il est actif |
 | Exécution | extraites des réponses (voir plus bas) | la collection, jusqu'à la fermeture de l'app |
 
 Priorité, de la plus faible à la plus forte : **globales < collection < environnement actif < valeurs extraites**.
@@ -277,7 +279,7 @@ Les préférences de l'application (thème, langue, onglets ouverts…) sont dan
 | Section | Réglages |
 |---|---|
 | Général | dossier des collections, langue (FR / EN), enregistrement automatique avant envoi |
-| Apparence | thème, effet scanlines CRT, lueur néon, taille de police de l'interface |
+| Apparence | thème (5 sombres, 5 clairs), effet scanlines CRT (thèmes sombres), lueur néon, taille de police de l'interface |
 | Éditeur | taille de police, retour à la ligne, formatage automatique des réponses XML |
 | Réseau | timeout, vérification SSL, suivi des redirections, proxy (système / aucun / personnalisé), identifiants proxy |
 | Mises à jour | vérification automatique, téléchargement automatique, pré-versions |
@@ -350,6 +352,8 @@ npm run dev        # Vite (HMR) + Electron
 | `npm run build` | build du renderer dans `dist/` |
 | `npm run dist` | installeurs locaux (non signés) dans `release/` |
 | `npm run icons` | régénère `build/icon.png` et `build/icon.icns` depuis `build/icon.svg` |
+| `bash scripts/demo/make-demo.sh` | réenregistre la démo (`docs/assets/demo.mp4`, `demo.gif`) et les captures d'écran (nécessite ffmpeg) |
+| `node scripts/demo/mock-server.js` | service SOAP de démo (météo) sur `http://localhost:8099/weather?wsdl`, pratique pour tester |
 
 Lancer l'app avec un dossier de données isolé (tests) :
 

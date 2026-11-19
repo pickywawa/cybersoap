@@ -43,12 +43,9 @@ export default function TopBar() {
           ))}
         </select>
         <button className="icon-btn" title={t('env.manage')} onClick={() => setModal({ type: 'environments' })}>
-          <Icon name="settings" size={14} />
+          <Icon name="sliders" size={14} />
         </button>
       </div>
-      <button className="icon-btn no-drag" title={t('sidebar.import')} onClick={() => setModal({ type: 'import' })}>
-        <Icon name="import" />
-      </button>
       <button className="icon-btn no-drag" title={t('top.settings')} onClick={() => setModal({ type: 'settings' })}>
         <Icon name="settings" />
       </button>

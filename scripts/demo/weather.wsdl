@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="WeatherService" targetNamespace="http://cybersoap.dev/weather"
+  xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://cybersoap.dev/weather">
+  <types>
+    <xs:schema targetNamespace="http://cybersoap.dev/weather" elementFormDefault="qualified">
+      <xs:simpleType name="Unit">
+        <xs:restriction base="xs:string"><xs:enumeration value="C"/><xs:enumeration value="F"/></xs:restriction>
+      </xs:simpleType>
+      <xs:element name="GetWeather">
+        <xs:complexType><xs:sequence>
+          <xs:element name="City" type="xs:string"/>
+          <xs:element name="Country" type="xs:string"/>
+          <xs:element name="Unit" type="tns:Unit" minOccurs="0"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="GetWeatherResponse">
+        <xs:complexType><xs:sequence>
+          <xs:element name="City" type="xs:string"/>
+          <xs:element name="Temperature" type="xs:decimal"/>
+          <xs:element name="Condition" type="xs:string"/>
+          <xs:element name="Humidity" type="xs:int"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="GetForecast">
+        <xs:complexType><xs:sequence>
+          <xs:element name="City" type="xs:string"/>
+          <xs:element name="Days" type="xs:int"/>
+          <xs:element name="Unit" type="tns:Unit" minOccurs="0"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="GetForecastResponse">
+        <xs:complexType><xs:sequence>
+          <xs:element name="Day" maxOccurs="unbounded">
+            <xs:complexType><xs:sequence>
+              <xs:element name="Date" type="xs:date"/>
+              <xs:element name="Min" type="xs:decimal"/>
+              <xs:element name="Max" type="xs:decimal"/>
+            </xs:sequence></xs:complexType>
+          </xs:element>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="ListCities">
+        <xs:complexType><xs:sequence><xs:element name="CountryCode" type="xs:string"/></xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="ListCitiesResponse">
+        <xs:complexType><xs:sequence><xs:element name="City" type="xs:string" maxOccurs="unbounded"/></xs:sequence></xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </types>
+  <message name="GetWeatherIn"><part name="parameters" element="tns:GetWeather"/></message>
+  <message name="GetWeatherOut"><part name="parameters" element="tns:GetWeatherResponse"/></message>
+  <message name="GetForecastIn"><part name="parameters" element="tns:GetForecast"/></message>
+  <message name="GetForecastOut"><part name="parameters" element="tns:GetForecastResponse"/></message>
+  <message name="ListCitiesIn"><part name="parameters" element="tns:ListCities"/></message>
+  <message name="ListCitiesOut"><part name="parameters" element="tns:ListCitiesResponse"/></message>
+  <portType name="WeatherPortType">
+    <operation name="GetWeather"><documentation>Current weather for a city</documentation><input message="tns:GetWeatherIn"/><output message="tns:GetWeatherOut"/></operation>
+    <operation name="GetForecast"><documentation>Forecast for the next days</documentation><input message="tns:GetForecastIn"/><output message="tns:GetForecastOut"/></operation>
+    <operation name="ListCities"><input message="tns:ListCitiesIn"/><output message="tns:ListCitiesOut"/></operation>
+  </portType>
+  <binding name="WeatherSoap" type="tns:WeatherPortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="GetWeather"><soap:operation soapAction="http://cybersoap.dev/weather/GetWeather"/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    <operation name="GetForecast"><soap:operation soapAction="http://cybersoap.dev/weather/GetForecast"/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+    <operation name="ListCities"><soap:operation soapAction="http://cybersoap.dev/weather/ListCities"/><input><soap:body use="literal"/></input><output><soap:body use="literal"/></output></operation>
+  </binding>
+  <service name="WeatherService">
+    <port name="WeatherSoap" binding="tns:WeatherSoap"><soap:address location="http://localhost:8099/weather"/></port>
+  </service>
+</definitions>

@@ -2163,3 +2163,14 @@ button:focus-visible {
   display: flex;
   gap: 8px;
 }
+
+.theme-group {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-mute);
+  margin: 4px 0 8px;
+}
+.theme-group ~ .theme-grid {
+  margin-bottom: 14px;
+}

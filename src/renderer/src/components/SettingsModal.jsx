@@ -92,8 +92,11 @@ export default function SettingsModal({ onClose, section: initialSection = 'gene
           {section === 'appearance' && (
             <div className="form-grid">
               <Field label={t('settings.theme')}>
+                {[true, false].map((dark) => (
+                <div key={String(dark)}>
+                <div className="theme-group">{dark ? t('settings.themesDark') : t('settings.themesLight')}</div>
                 <div className="theme-grid">
-                  {Object.entries(THEMES).map(([id, th]) => (
+                  {Object.entries(THEMES).filter(([, th]) => th.dark === dark).map(([id, th]) => (
                     <button
                       key={id}
                       className={`theme-card ${settings.theme === id ? 'active' : ''}`}
@@ -119,6 +122,8 @@ export default function SettingsModal({ onClose, section: initialSection = 'gene
                     </button>
                   ))}
                 </div>
+                </div>
+                ))}
               </Field>
               <Toggle label={t('settings.scanlines')} checked={settings.scanlines} onChange={(v) => set({ scanlines: v })} />
               <Toggle label={t('settings.glow')} checked={settings.glow} onChange={(v) => set({ glow: v })} />

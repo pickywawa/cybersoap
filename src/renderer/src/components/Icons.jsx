@@ -37,7 +37,8 @@ const paths = {
   terminal: 'M4 17l6-6-6-6M12 19h8',
   link: 'M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1',
   info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7h.01',
-  next: 'M5 5l7 7-7 7M13 5l7 7-7 7'
+  next: 'M5 5l7 7-7 7M13 5l7 7-7 7',
+  sliders: 'M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6'
 };
 
 export default function Icon({ name, size = 16, className = '', strokeWidth = 1.8, style }) {
