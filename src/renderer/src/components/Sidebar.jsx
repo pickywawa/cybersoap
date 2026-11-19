@@ -217,7 +217,14 @@ function TreeItem({ item, depth, filter, menu }) {
         title={item.type === 'request' && item.operation ? `${item.operation}` : item.name}
         {...dnd}
       >
-        {isContainer ? chevron : <Icon name="file" size={13} className="row-icon req-icon" />}
+        {isContainer ? (
+          chevron
+        ) : (
+          <>
+            <span className="chev-spacer" />
+            <Icon name="file" size={13} className="row-icon req-icon" />
+          </>
+        )}
         {item.type === 'group' && <Icon name={isOpen ? 'folderOpen' : 'folder'} size={14} className="row-icon group-icon" />}
         {item.type === 'collection' && <Icon name="database" size={14} className="row-icon accent" />}
         {item.type === 'folder' && <Icon name={isOpen ? 'folderOpen' : 'folder'} size={14} className="row-icon" />}

@@ -605,6 +605,10 @@ kbd {
   border-radius: 3px;
   flex-shrink: 0;
 }
+.chev-spacer {
+  width: 15px;
+  flex-shrink: 0;
+}
 .chev-btn:hover {
   background: var(--active);
 }
