@@ -1489,6 +1489,8 @@ kbd {
   cursor: pointer;
 }
 .run-state {
+  display: inline-block;
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 10.5px;
   text-transform: uppercase;
@@ -2118,6 +2120,11 @@ pre {
 .runner-table td:nth-child(1),
 .runner-table td:nth-child(2) {
   width: 1%;
+  white-space: nowrap;
+}
+.runner-table td:nth-child(4),
+.runner-table td:nth-child(5) {
+  white-space: nowrap;
 }
 .runner-table td:nth-child(3) {
   width: 30%;
