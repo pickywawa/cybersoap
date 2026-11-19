@@ -212,6 +212,16 @@ Clic droit sur une collection ou un dossier → **Exécuter**, ou bouton **Exéc
 - Une requête échoue si l'appel échoue, si une assertion échoue, ou (sans assertion) si le statut HTTP est ≥ 400.
 - Cliquez sur une ligne pour ouvrir la requête et sa réponse.
 
+### Organiser les collections en dossiers
+
+Les collections peuvent être rangées dans des dossiers (facultatif), eux-mêmes imbriquables : par équipe, par client, par projet…
+
+- **Créer un dossier** : bouton dossier ⊕ en haut de la liste des collections, ou clic droit sur un dossier → **Nouveau dossier**.
+- **Créer une collection dans un dossier** : clic droit sur le dossier → **Nouvelle collection**.
+- **Déplacer** : glissez une collection ou un dossier sur un dossier ; sur une collection pour le placer à côté ; sur la zone vide de la liste pour le remettre à la racine. Ou clic droit → **Déplacer vers…**.
+- **Replier / déplier** : clic sur le dossier (ouvert par défaut).
+- Les onglets ouverts suivent le déplacement. Une collection ou un dossier ne peut pas être placé dans une collection.
+
 ### Organisation des requêtes
 
 - Les requêtes sont **triées par ordre alphabétique** par défaut (tri naturel : `Test 2` avant `Test 10`), les dossiers en premier.
@@ -238,10 +248,15 @@ Pas de base de données : tout est en fichiers JSON lisibles, faciles à version
 Répertoire par défaut : `~/CyberSoap/collections` (modifiable dans **Paramètres → Général**).
 
 ```
-collections/
+collections/                  ← dossier de travail
   _environments/              ← environnements globaux
     globals.json              ← variables globales
     dev.env.json              ← 1 fichier par environnement
+  Équipe Paiement/            ← dossier de collections (facultatif)
+    group.json
+    Facturation/              ← une collection rangée dans le dossier
+      collection.json
+      …
   MonService/                 ← 1 collection = 1 dossier
     collection.json           ← nom, variables, en-têtes, auth, source WSDL, ordre manuel
     schema.json               ← schéma d'autocomplétion généré depuis le WSDL
@@ -250,6 +265,8 @@ collections/
       folder.json             ← ordre manuel du dossier
       GetWeather.soap.json    ← 1 requête = 1 fichier
 ```
+
+Toutes les variables vivent dans le dossier de travail : les variables globales et les environnements dans `_environments/`, celles de chaque collection dans son `collection.json`. Changer de dossier de travail change donc aussi de jeu d'environnements ; seul le choix de l'environnement actif est une préférence de l'application.
 
 Exemple de requête (`GetWeather.soap.json`) :
 

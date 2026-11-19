@@ -181,29 +181,74 @@ function sortAlpha(dir) {
   }
 }
 
-function listCollections(root) {
-  ensureRoot(root);
-  const result = [];
-  for (const e of fs.readdirSync(root, { withFileTypes: true })) {
-    if (!e.isDirectory() || e.name.startsWith('.')) continue;
-    const dir = path.join(root, e.name);
-    const meta = readJson(path.join(dir, COLLECTION_FILE), null);
-    if (!meta) continue;
-    result.push({
-      type: 'collection',
-      name: meta.name || e.name,
-      path: dir,
-      meta,
-      children: walk(dir)
-    });
-  }
-  result.sort((a, b) => a.name.localeCompare(b.name));
-  return result;
+const GROUP_FILE = 'group.json';
+const SKIP_ROOT_DIRS = new Set(['_environments', 'node_modules']);
+const byName = (a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+
+function isCollectionDir(dir) {
+  return fs.existsSync(path.join(dir, COLLECTION_FILE));
 }
 
-function createCollection(root, name, meta = {}) {
+/** true if a plain folder holds collections somewhere below (so it is shown as a group) */
+function containsCollection(dir, depth = 0) {
+  if (depth > 4) return false;
+  let entries = [];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch (_) {
+    return false;
+  }
+  return entries.some((e) => {
+    if (!e.isDirectory() || e.name.startsWith('.')) return false;
+    const sub = path.join(dir, e.name);
+    return isCollectionDir(sub) || containsCollection(sub, depth + 1);
+  });
+}
+
+/**
+ * Collections tree of the working directory.
+ * A group is a plain folder (marked with group.json, or holding collections) used to organise collections.
+ */
+function scanGroup(dir) {
+  const groups = [];
+  const collections = [];
+  let entries = [];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch (_) {
+    return [];
+  }
+  for (const e of entries) {
+    if (!e.isDirectory() || e.name.startsWith('.') || SKIP_ROOT_DIRS.has(e.name)) continue;
+    const sub = path.join(dir, e.name);
+    const meta = readJson(path.join(sub, COLLECTION_FILE), null);
+    if (meta) {
+      collections.push({ type: 'collection', name: meta.name || e.name, path: sub, meta, children: walk(sub) });
+    } else if (fs.existsSync(path.join(sub, GROUP_FILE)) || containsCollection(sub)) {
+      const g = readJson(path.join(sub, GROUP_FILE), {}) || {};
+      groups.push({ type: 'group', name: g.name || e.name, path: sub, children: scanGroup(sub) });
+    }
+  }
+  groups.sort(byName);
+  collections.sort(byName);
+  return [...groups, ...collections];
+}
+
+function listCollections(root) {
   ensureRoot(root);
-  const dir = uniquePath(root, safeName(name));
+  return scanGroup(root);
+}
+
+function createGroup(parentDir, name) {
+  const dir = uniquePath(parentDir, safeName(name));
+  fs.mkdirSync(dir, { recursive: true });
+  writeJson(path.join(dir, GROUP_FILE), { name });
+  return dir;
+}
+
+function createCollection(root, name, meta = {}, parentDir = null) {
+  ensureRoot(root);
+  const dir = uniquePath(parentDir || root, safeName(name));
   fs.mkdirSync(dir, { recursive: true });
   const full = { ...defaultCollectionMeta(name), ...meta, name };
   writeJson(path.join(dir, COLLECTION_FILE), full);
@@ -273,6 +318,8 @@ function renameItem(p, newName) {
     if (meta) {
       meta.name = newName;
       writeJson(path.join(target, COLLECTION_FILE), meta);
+    } else if (fs.existsSync(path.join(target, GROUP_FILE))) {
+      writeJson(path.join(target, GROUP_FILE), { ...(readJson(path.join(target, GROUP_FILE), {}) || {}), name: newName });
     } else {
       renameInOrder(path.dirname(p), path.basename(p), path.basename(target));
     }
@@ -312,9 +359,12 @@ function moveItem(src, destDir) {
   const target = isReq
     ? uniquePath(destDir, base.slice(0, -REQ_EXT.length), REQ_EXT)
     : uniquePath(destDir, base);
-  if (path.resolve(destDir).startsWith(path.resolve(src) + path.sep)) {
+  if (path.resolve(destDir) === path.resolve(src) || path.resolve(destDir).startsWith(path.resolve(src) + path.sep)) {
     throw new Error('Cannot move a folder into itself');
   }
+  const isContainer = !isReq && (isCollectionDir(src) || fs.existsSync(path.join(src, GROUP_FILE)) || containsCollection(src));
+  if (isContainer && findCollectionDir(destDir)) throw new Error('A collection or group cannot be moved inside a collection');
+  if (!isContainer && !findCollectionDir(destDir)) throw new Error('Requests and folders must stay inside a collection');
   fs.renameSync(src, target);
   return target;
 }
@@ -438,6 +488,8 @@ function saveEnvironments(root, { globals = [], environments = [] }) {
 }
 
 module.exports = {
+  createGroup,
+  isCollectionDir,
   readEnvironments,
   saveEnvironments,
   REQ_EXT,

@@ -25,6 +25,7 @@ export const useStore = create((set, get) => ({
   settings: { language: 'en', theme: 'dracula' },
   appInfo: null,
   collections: [],
+  tree: [],
   tabs: [],
   activeTab: null,
   docs: {},
@@ -90,10 +91,19 @@ export const useStore = create((set, get) => ({
 
   async refresh() {
     get().loadEnvironments();
-    const collections = await api.listCollections();
+    const tree = await api.listCollections();
+    // flat list of every collection, whatever group it lives in
+    const collections = [];
+    const visit = (items) => {
+      for (const it of items) {
+        if (it.type === 'collection') collections.push(it);
+        else if (it.type === 'group') visit(it.children);
+      }
+    };
+    visit(tree);
     const metas = {};
     for (const c of collections) metas[c.path] = c.meta;
-    set({ collections, metas });
+    set({ tree, collections, metas });
   },
 
   async updateSettings(patch) {
@@ -341,10 +351,18 @@ export const useStore = create((set, get) => ({
   },
 
   /* ------------------------------------------------------------ collections & files */
-  async createCollection(name) {
-    const { path } = await api.createCollection(name);
+  async createCollection(name, parent) {
+    const { path } = await api.createCollection(name, parent || null);
+    if (parent) get().toggleExpanded(parent, true);
     await get().refresh();
     get().toggleExpanded(path, true);
+    return path;
+  },
+
+  async createGroup(parent, name) {
+    const path = await api.createGroup(parent || null, name);
+    if (parent) get().toggleExpanded(parent, true);
+    await get().refresh();
     return path;
   },
 

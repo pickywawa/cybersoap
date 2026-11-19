@@ -11,6 +11,7 @@ import Welcome from './components/Welcome';
 import ImportModal from './components/ImportModal';
 import SettingsModal from './components/SettingsModal';
 import EnvironmentsModal from './components/EnvironmentsModal';
+import MoveModal from './components/MoveModal';
 import Logo from './components/Logo';
 import { ContextMenu, Toasts, PromptModal, useSplitter } from './components/ui';
 
@@ -33,6 +34,7 @@ function Modals() {
   if (modal.type === 'import') return <ImportModal onClose={close} {...(modal.props || {})} />;
   if (modal.type === 'settings') return <SettingsModal onClose={close} {...(modal.props || {})} />;
   if (modal.type === 'environments') return <EnvironmentsModal onClose={close} />;
+  if (modal.type === 'move') return <MoveModal onClose={close} {...modal.props} />;
   if (modal.type === 'prompt') return <PromptModal onClose={close} {...modal.props} />;
   return null;
 }

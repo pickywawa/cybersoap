@@ -19,6 +19,11 @@ function useItemMenu() {
     prompt({ title: t('menu.newRequest'), label: t('prompt.requestName'), onSubmit: (n) => s().createRequest(dir, n).catch((e) => s().error(e)) });
   const newFolder = (dir) =>
     prompt({ title: t('menu.newFolder'), label: t('prompt.folderName'), onSubmit: (n) => s().createFolder(dir, n).catch((e) => s().error(e)) });
+  const newCollection = (parent) =>
+    prompt({ title: t('sidebar.newCollection'), label: t('prompt.collectionName'), onSubmit: (n) => s().createCollection(n, parent).catch((e) => s().error(e)) });
+  const newGroup = (parent) =>
+    prompt({ title: t('sidebar.newGroup'), label: t('prompt.folderName'), onSubmit: (n) => s().createGroup(parent, n).catch((e) => s().error(e)) });
+  const moveTo = (item) => s().setModal({ type: 'move', props: { item } });
   const rename = (item) =>
     prompt({ title: t('common.rename'), label: t('prompt.newName'), initial: item.name, okLabel: t('common.rename'), onSubmit: (n) => s().renameItem(item.path, n) });
   const importRequest = async (dir) => {
@@ -49,7 +54,7 @@ function useItemMenu() {
     }
   };
 
-  return (e, item) => {
+  const menu = (e, item) => {
     if (item.type === 'collection') {
       const hasWsdl = !!(item.meta && item.meta.wsdl && item.meta.wsdl.source);
       openContextMenu(e, [
@@ -64,8 +69,19 @@ function useItemMenu() {
         '-',
         { icon: 'export', label: t('menu.exportBundle'), onClick: () => exportBundle(item.path) },
         { icon: 'export', label: t('menu.exportFolder'), onClick: () => exportFolder(item.path) },
+        { icon: 'layers', label: t('menu.moveTo'), onClick: () => moveTo(item) },
         { icon: 'eye', label: t('menu.reveal'), onClick: () => api.reveal(item.path) },
         '-',
+        { icon: 'edit', label: t('common.rename'), onClick: () => rename(item) },
+        { icon: 'trash', label: t('common.delete'), danger: true, onClick: () => s().deleteItem(item.path, item.name) }
+      ]);
+    } else if (item.type === 'group') {
+      openContextMenu(e, [
+        { icon: 'database', label: t('sidebar.newCollection'), onClick: () => newCollection(item.path) },
+        { icon: 'folder', label: t('sidebar.newGroup'), onClick: () => newGroup(item.path) },
+        '-',
+        { icon: 'layers', label: t('menu.moveTo'), onClick: () => moveTo(item) },
+        { icon: 'eye', label: t('menu.reveal'), onClick: () => api.reveal(item.path) },
         { icon: 'edit', label: t('common.rename'), onClick: () => rename(item) },
         { icon: 'trash', label: t('common.delete'), danger: true, onClick: () => s().deleteItem(item.path, item.name) }
       ]);
@@ -95,7 +111,13 @@ function useItemMenu() {
       ]);
     }
   };
+  menu.newCollection = newCollection;
+  menu.newGroup = newGroup;
+  return menu;
 }
+
+const CONTAINER_TYPE = 'application/x-cybersoap-container';
+const parentOf = (p) => p.slice(0, Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\')));
 
 function TreeItem({ item, depth, filter, menu }) {
   const expanded = useStore((s) => s.expanded[item.path]);
@@ -107,7 +129,8 @@ function TreeItem({ item, depth, filter, menu }) {
   const [drop, setDrop] = useState(null); // 'before' | 'after' | 'into'
 
   if (!matchFilter(item, filter)) return null;
-  const isOpen = filter ? true : expanded;
+  // groups are open by default, collections and folders closed
+  const isOpen = filter ? true : expanded ?? item.type === 'group';
   const isContainer = item.type !== 'request';
   const active = activeTab === `req:${item.path}` || activeTab === `col:${item.path}`;
   const s = useStore.getState;
@@ -117,11 +140,19 @@ function TreeItem({ item, depth, filter, menu }) {
       // a click opens the collection (expand + settings tab); only the chevron collapses it
       toggleExpanded(item.path, true);
       s().openCollectionSettings(item.path);
-    } else if (item.type === 'folder') toggleExpanded(item.path);
+    } else if (item.type === 'folder' || item.type === 'group') toggleExpanded(item.path, !isOpen);
     else openRequest(item.path).catch((e) => s().error(e));
   };
 
   const zone = (e) => {
+    const container = e.dataTransfer.types.includes(CONTAINER_TYPE);
+    if (container) {
+      // collections and groups: into a group, or next to a collection (= into its parent)
+      if (item.type === 'group') return 'into';
+      if (item.type === 'collection') return 'beside';
+      return null;
+    }
+    if (item.type === 'group') return null;
     const r = e.currentTarget.getBoundingClientRect();
     const y = (e.clientY - r.top) / r.height;
     if (item.type === 'collection') return 'into';
@@ -130,29 +161,37 @@ function TreeItem({ item, depth, filter, menu }) {
   };
 
   const dnd = {
-    draggable: item.type !== 'collection',
+    draggable: true,
     onDragStart: (e) => {
       e.stopPropagation();
       e.dataTransfer.setData('text/cybersoap-path', item.path);
+      if (item.type === 'collection' || item.type === 'group') e.dataTransfer.setData(CONTAINER_TYPE, '1');
       e.dataTransfer.effectAllowed = 'move';
     },
     onDragOver: (e) => {
       if (!e.dataTransfer.types.includes('text/cybersoap-path')) return;
-      e.preventDefault();
+      e.stopPropagation();
       const z = zone(e);
+      if (!z) {
+        if (drop) setDrop(null);
+        return;
+      }
+      e.preventDefault();
       if (z !== drop) setDrop(z);
     },
     onDragLeave: () => setDrop(null),
     onDrop: (e) => {
+      e.stopPropagation();
       const z = drop || zone(e);
       setDrop(null);
       const src = e.dataTransfer.getData('text/cybersoap-path');
-      if (!src || src === item.path || isUnder(item.path, src)) return;
+      if (!z || !src || src === item.path || isUnder(item.path, src)) return;
       e.preventDefault();
       if (z === 'into') {
         s().moveItem(src, item.path);
         toggleExpanded(item.path, true);
-      } else s().reorderItem(src, item.path, z);
+      } else if (z === 'beside') s().moveItem(src, parentOf(item.path));
+      else s().reorderItem(src, item.path, z);
     }
   };
 
@@ -161,7 +200,7 @@ function TreeItem({ item, depth, filter, menu }) {
       className="chev-btn"
       onClick={(e) => {
         e.stopPropagation();
-        toggleExpanded(item.path);
+        toggleExpanded(item.path, !isOpen);
       }}
     >
       <Icon name={isOpen ? 'chevronDown' : 'chevronRight'} size={13} className="chev" />
@@ -171,7 +210,7 @@ function TreeItem({ item, depth, filter, menu }) {
   return (
     <>
       <div
-        className={`tree-row ${item.type} ${active ? 'active' : ''} ${drop ? `drop-${drop}` : ''}`}
+        className={`tree-row ${item.type} ${active ? 'active' : ''} ${drop ? `drop-${drop === 'beside' ? 'before' : drop}` : ''}`}
         style={{ paddingLeft: 8 + depth * 14 }}
         onClick={onClick}
         onContextMenu={(e) => menu(e, item)}
@@ -179,6 +218,7 @@ function TreeItem({ item, depth, filter, menu }) {
         {...dnd}
       >
         {isContainer ? chevron : <Icon name="file" size={13} className="row-icon req-icon" />}
+        {item.type === 'group' && <Icon name={isOpen ? 'folderOpen' : 'folder'} size={14} className="row-icon group-icon" />}
         {item.type === 'collection' && <Icon name="database" size={14} className="row-icon accent" />}
         {item.type === 'folder' && <Icon name={isOpen ? 'folderOpen' : 'folder'} size={14} className="row-icon" />}
         <span className="tree-name">{item.name}</span>
@@ -204,7 +244,9 @@ function TreeItem({ item, depth, filter, menu }) {
 
 export default function Sidebar({ width }) {
   const t = useT();
-  const collections = useStore((s) => s.collections);
+  const tree = useStore((s) => s.tree);
+  const root = useStore((s) => s.settings.collectionsPath);
+  const [rootDrop, setRootDrop] = useState(false);
   const filter = useStore((s) => s.filter);
   const setFilter = useStore((s) => s.setFilter);
   const refresh = useStore((s) => s.refresh);
@@ -212,20 +254,34 @@ export default function Sidebar({ width }) {
   const menu = useItemMenu();
   const f = filter.trim().toLowerCase();
 
-  const newCollection = () =>
-    prompt({
-      title: t('sidebar.newCollection'),
-      label: t('prompt.collectionName'),
-      onSubmit: (n) => useStore.getState().createCollection(n).catch((e) => useStore.getState().error(e))
-    });
+  // dropping a collection or a group on the empty area moves it back to the root
+  const rootDnd = {
+    onDragOver: (e) => {
+      if (!e.dataTransfer.types.includes(CONTAINER_TYPE)) return;
+      e.preventDefault();
+      setRootDrop(true);
+    },
+    onDragLeave: () => setRootDrop(false),
+    onDrop: (e) => {
+      setRootDrop(false);
+      const src = e.dataTransfer.getData('text/cybersoap-path');
+      if (src && root) {
+        e.preventDefault();
+        useStore.getState().moveItem(src, root);
+      }
+    }
+  };
 
   return (
     <aside className="sidebar" style={{ width }}>
       <div className="sidebar-head">
         <span className="section-title">{t('sidebar.collections')}</span>
         <div className="sidebar-actions">
-          <button className="icon-btn" title={t('sidebar.newCollection')} onClick={newCollection}>
+          <button className="icon-btn" title={t('sidebar.newCollection')} onClick={() => menu.newCollection(null)}>
             <Icon name="plus" />
+          </button>
+          <button className="icon-btn" title={t('sidebar.newGroup')} onClick={() => menu.newGroup(null)}>
+            <Icon name="folderPlus" />
           </button>
           <button className="icon-btn" title={t('sidebar.import')} onClick={() => setModal({ type: 'import' })}>
             <Icon name="import" />
@@ -244,8 +300,8 @@ export default function Sidebar({ width }) {
           </button>
         )}
       </div>
-      <div className="tree">
-        {collections.length === 0 && (
+      <div className={`tree ${rootDrop ? 'root-drop' : ''}`} {...rootDnd}>
+        {tree.length === 0 && (
           <div className="sidebar-empty">
             <p>{t('sidebar.empty')}</p>
             <p className="dim">{t('sidebar.emptyHint')}</p>
@@ -254,9 +310,10 @@ export default function Sidebar({ width }) {
             </button>
           </div>
         )}
-        {collections.map((c) => (
+        {tree.map((c) => (
           <TreeItem key={c.path} item={c} depth={0} filter={f} menu={menu} />
         ))}
+        {rootDrop && <div className="root-drop-hint">{t('sidebar.dropRoot')}</div>}
       </div>
     </aside>
   );

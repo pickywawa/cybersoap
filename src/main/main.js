@@ -126,7 +126,8 @@ function registerIpc() {
   handle('collections:list', () => storage.listCollections(root()));
   handle('env:read', () => storage.readEnvironments(root()));
   handle('env:save', (data) => storage.saveEnvironments(root(), data));
-  handle('collection:create', (name) => storage.createCollection(root(), name));
+  handle('collection:create', (name, parent) => storage.createCollection(root(), name, {}, parent || null));
+  handle('group:create', (parent, name) => storage.createGroup(parent || root(), name));
   handle('collection:read', (dir) => storage.readCollection(dir));
   handle('collection:save', (dir, meta) => storage.saveCollection(dir, meta));
   handle('collection:schema', (dir) => storage.readSchema(dir));
