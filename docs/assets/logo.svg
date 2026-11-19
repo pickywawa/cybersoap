@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<defs>
+  <linearGradient id="cs-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8be9fd"/><stop offset="0.5" stop-color="#bd93f9"/><stop offset="1" stop-color="#ff79c6"/></linearGradient>
+  <radialGradient id="cs-fill" cx="0.38" cy="0.32" r="0.75"><stop offset="0" stop-color="#44475a"/><stop offset="0.7" stop-color="#282a36"/><stop offset="1" stop-color="#191a21"/></radialGradient>
+  <linearGradient id="cs-visor" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff79c6"/><stop offset="1" stop-color="#8be9fd"/></linearGradient>
+  <filter id="cs-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="#bd93f9" stroke-opacity="0.12" stroke-width="0.5"/></pattern>
+  <radialGradient id="bgGlow" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#3a2f5c"/><stop offset="1" stop-color="#14151b"/></radialGradient>
+</defs>
+  <circle cx="104" cy="22" r="7" fill="none" stroke="#8be9fd" stroke-width="2.5" opacity="0.85"/>
+  <circle cx="116" cy="42" r="4" fill="none" stroke="#ff79c6" stroke-width="2" opacity="0.8"/>
+  <circle cx="18" cy="104" r="5" fill="none" stroke="#bd93f9" stroke-width="2" opacity="0.8"/>
+  <path d="M64 20 L64 8" stroke="#bd93f9" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="64" cy="7" r="4.5" fill="#50fa7b" filter="url(#cs-glow)"/>
+  <circle cx="64" cy="66" r="46" fill="url(#cs-fill)" stroke="url(#cs-ring)" stroke-width="5" filter="url(#cs-glow)"/>
+  <path d="M36 50 A32 32 0 0 1 58 30" stroke="#f8f8f2" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <circle cx="33" cy="60" r="3" fill="#f8f8f2" opacity="0.5"/>
+  <rect x="30" y="56" width="68" height="26" rx="13" fill="#191a21" stroke="url(#cs-visor)" stroke-width="3"/>
+  <g filter="url(#cs-glow)">
+    <rect x="44" y="63" width="12" height="12" rx="3" fill="#8be9fd"/>
+    <rect x="72" y="63" width="12" height="12" rx="3" fill="#ff79c6"/>
+  </g>
+  <path d="M54 92 Q64 100 74 92" stroke="#50fa7b" stroke-width="3.5" stroke-linecap="round" fill="none" filter="url(#cs-glow)"/>
+  <path d="M99 74 L110 74 L116 80" stroke="#bd93f9" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="117" cy="81" r="2.6" fill="#bd93f9"/>
+  <path d="M29 74 L18 74 L12 68" stroke="#8be9fd" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="11" cy="67" r="2.6" fill="#8be9fd"/>
+</svg>

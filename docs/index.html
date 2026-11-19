@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberSoap — client SOAP au style cyber</title>
+  <meta name="description" content="CyberSoap : client desktop open source pour tester vos web services SOAP. Import WSDL, éditeur XML avec autocomplétion, assertions, runner." />
+  <link rel="icon" href="assets/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #191a21; --bg2: #21222c; --panel: #282a36; --border: #3b3e51; --text: #f8f8f2; --dim: #a9adc1; --mute: #6272a4;
+      --purple: #bd93f9; --pink: #ff79c6; --cyan: #8be9fd; --green: #50fa7b; --yellow: #f1fa8c;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, -apple-system, Segoe UI, sans-serif; line-height: 1.6; overflow-x: hidden; }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { color: var(--pink); }
+    .grid-bg { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(189,147,249,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(189,147,249,.06) 1px, transparent 1px); background-size: 36px 36px; mask-image: radial-gradient(circle at 50% 20%, #000 20%, transparent 75%); }
+    .scan { position: fixed; inset: 0; pointer-events: none; z-index: 50; background: repeating-linear-gradient(to bottom, rgba(255,255,255,.015) 0, rgba(255,255,255,.015) 1px, transparent 1px, transparent 3px); }
+    nav { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 18px; padding: 12px 28px; background: rgba(25,26,33,.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+    nav::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, var(--purple) 25%, var(--pink) 60%, transparent); }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: Orbitron, sans-serif; font-weight: 900; letter-spacing: .18em; color: var(--text); }
+    .brand b { color: var(--purple); text-shadow: 0 0 10px rgba(189,147,249,.6); }
+    nav .links { margin-left: auto; display: flex; gap: 18px; align-items: center; font-size: 14px; }
+    nav .links a { color: var(--dim); }
+    nav .links a:hover { color: var(--purple); }
+    .lang { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .lang button { background: none; border: 0; color: var(--dim); padding: 4px 10px; cursor: pointer; font: 600 12px 'JetBrains Mono', monospace; }
+    .lang button.on { background: var(--purple); color: var(--bg); }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+    .hero { text-align: center; padding: 70px 0 40px; }
+    .hero img.logo { width: 150px; filter: drop-shadow(0 0 24px rgba(189,147,249,.45)); animation: float 4s ease-in-out infinite; }
+    @keyframes float { 50% { transform: translateY(-8px); } }
+    h1 { font-family: Orbitron, sans-serif; font-weight: 900; font-size: clamp(38px, 7vw, 72px); letter-spacing: .14em; margin: 18px 0 6px; }
+    h1 span { color: var(--purple); text-shadow: 0 0 18px rgba(189,147,249,.55); }
+    .tag { color: var(--dim); font-size: 19px; max-width: 680px; margin: 0 auto 30px; }
+    .dl { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 18px 0 10px; }
+    .btn { display: inline-flex; align-items: center; gap: 10px; padding: 13px 22px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-weight: 600; cursor: pointer; transition: .2s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+    .btn:hover { border-color: var(--purple); color: var(--purple); transform: translateY(-2px); }
+    .btn.primary { background: var(--purple); border-color: var(--purple); color: var(--bg); box-shadow: 0 0 22px rgba(189,147,249,.4); }
+    .btn.primary:hover { color: var(--bg); filter: brightness(1.1); }
+    .btn small { font: 400 11px 'JetBrains Mono', monospace; opacity: .75; }
+    .btn .col { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
+    .version { font: 13px 'JetBrains Mono', monospace; color: var(--mute); }
+    .shot { margin: 40px auto 0; border: 1px solid var(--border); box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 40px rgba(189,147,249,.18); border-radius: 8px; overflow: hidden; max-width: 1100px; }
+    .shot img { display: block; width: 100%; }
+    section { padding: 70px 0 20px; }
+    h2 { font-family: Orbitron, sans-serif; letter-spacing: .14em; font-size: 22px; text-transform: uppercase; color: var(--purple); margin: 0 0 28px; }
+    .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 14px; }
+    .card { background: var(--panel); border: 1px solid var(--border); padding: 20px; clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); transition: .2s; }
+    .card:hover { border-color: var(--purple); box-shadow: 0 0 22px rgba(189,147,249,.2); }
+    .card .ic { font-size: 22px; }
+    .card h3 { margin: 8px 0 6px; font-size: 16px; }
+    .card p { margin: 0; color: var(--dim); font-size: 14px; }
+    .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .gallery figure { margin: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--panel); }
+    .gallery img { width: 100%; display: block; }
+    .gallery figcaption { padding: 10px 14px; color: var(--dim); font-size: 13px; }
+    pre, code { font-family: 'JetBrains Mono', monospace; }
+    pre { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--purple); padding: 14px 16px; overflow-x: auto; font-size: 13px; color: var(--cyan); }
+    code { color: var(--pink); }
+    .install { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .install h3 { margin: 0 0 6px; }
+    .all-assets { margin-top: 18px; font-size: 14px; color: var(--dim); }
+    .all-assets ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .all-assets li a { display: inline-block; padding: 4px 10px; border: 1px solid var(--border); font: 12px 'JetBrains Mono', monospace; }
+    footer { margin-top: 80px; padding: 30px 0; border-top: 1px solid var(--border); color: var(--mute); text-align: center; font-size: 13px; }
+    [data-lang="en"] .fr, [data-lang="fr"] .en { display: none !important; }
+    @media (max-width: 760px) { .gallery { grid-template-columns: 1fr; } nav .links a.hide-sm { display: none; } }
+  </style>
+</head>
+<body data-lang="fr">
+  <div class="grid-bg"></div>
+  <div class="scan"></div>
+  <nav>
+    <a class="brand" href="#"><img src="assets/logo.svg" width="30" height="30" alt="" />CYBER<b>SOAP</b></a>
+    <div class="links">
+      <a class="hide-sm" href="#features"><span class="fr">Fonctionnalités</span><span class="en">Features</span></a>
+      <a class="hide-sm" href="#download"><span class="fr">Téléchargement</span><span class="en">Download</span></a>
+      <a href="https://github.com/pickywawa/cybersoap">GitHub</a>
+      <div class="lang"><button data-l="fr" class="on">FR</button><button data-l="en">EN</button></div>
+    </div>
+  </nav>
+
+  <header class="hero wrap">
+    <img class="logo" src="assets/logo.svg" alt="CyberSoap" />
+    <h1>CYBER<span>SOAP</span></h1>
+    <p class="tag">
+      <span class="fr">Le client desktop open source pour tester, déboguer et automatiser vos web services SOAP. Importez un WSDL, c'est prêt.</span>
+      <span class="en">The open source desktop client to test, debug and automate your SOAP web services. Import a WSDL and you're ready to go.</span>
+    </p>
+    <div class="dl" id="download">
+      <a class="btn primary" id="dl-main" href="https://github.com/pickywawa/cybersoap/releases/latest">
+        <span>⬇</span><span class="col"><span id="dl-main-label"><span class="fr">Télécharger</span><span class="en">Download</span></span><small id="dl-main-file">GitHub Releases</small></span>
+      </a>
+      <a class="btn" data-os="mac" href="https://github.com/pickywawa/cybersoap/releases/latest"><span></span><span class="col">macOS<small data-file>Apple Silicon / Intel</small></span></a>
+      <a class="btn" data-os="win" href="https://github.com/pickywawa/cybersoap/releases/latest"><span>⊞</span><span class="col">Windows<small data-file>Installer x64</small></span></a>
+      <a class="btn" data-os="linux" href="https://github.com/pickywawa/cybersoap/releases/latest"><span>🐧</span><span class="col">Linux<small data-file>AppImage x64</small></span></a>
+    </div>
+    <div class="version" id="version">&nbsp;</div>
+    <div class="shot"><img src="assets/screen-request.png" alt="CyberSoap" /></div>
+  </header>
+
+  <section id="features" class="wrap">
+    <h2><span class="fr">Fonctionnalités</span><span class="en">Features</span></h2>
+    <div class="features">
+      <div class="card"><div class="ic">⚡</div><h3><span class="fr">Import WSDL</span><span class="en">WSDL import</span></h3><p><span class="fr">WSDL 1.1, SOAP 1.1/1.2, document & rpc, imports XSD. Chaque opération devient une requête prête à lancer.</span><span class="en">WSDL 1.1, SOAP 1.1/1.2, document & rpc, XSD imports. Every operation becomes a ready-to-run request.</span></p></div>
+      <div class="card"><div class="ic">⌨</div><h3><span class="fr">Vrai éditeur XML</span><span class="en">Real XML editor</span></h3><p><span class="fr">Coloration, autocomplétion contextuelle issue du schéma, valeurs d'énumération, lint, pliage, formatage.</span><span class="en">Highlighting, schema-aware autocompletion, enum values, live lint, folding, formatting.</span></p></div>
+      <div class="card"><div class="ic">✔</div><h3>Assertions</h3><p><span class="fr">SOAP Fault, statut HTTP, contient, regex, XPath, temps de réponse… comme les test steps SoapUI.</span><span class="en">SOAP Fault, HTTP status, contains, regex, XPath, response time… like SoapUI test steps.</span></p></div>
+      <div class="card"><div class="ic">▶</div><h3>Runner</h3><p><span class="fr">Exécutez une collection ou un dossier, avec extraction XPath de valeurs entre requêtes.</span><span class="en">Run a whole collection or folder, with XPath value extraction between requests.</span></p></div>
+      <div class="card"><div class="ic">🌐</div><h3><span class="fr">Environnements globaux</span><span class="en">Global environments</span></h3><p><span class="fr">Variables globales et environnements partagés par toutes les collections, <code>{{variables}}</code> partout.</span><span class="en">Global variables and environments shared across collections, <code>{{variables}}</code> everywhere.</span></p></div>
+      <div class="card"><div class="ic">🔐</div><h3>Auth</h3><p>Basic, Bearer, WS-Security UsernameToken (Text / Digest + Timestamp).</p></div>
+      <div class="card"><div class="ic">📁</div><h3><span class="fr">Fichiers, pas de BDD</span><span class="en">Files, no database</span></h3><p><span class="fr">1 collection = 1 dossier, 1 requête = 1 fichier JSON. Versionnable avec Git.</span><span class="en">1 collection = 1 folder, 1 request = 1 JSON file. Git-friendly.</span></p></div>
+      <div class="card"><div class="ic">🎨</div><h3><span class="fr">Thèmes & langues</span><span class="en">Themes & languages</span></h3><p><span class="fr">Dracula, Cyberdog Neon, Synthwave, Matrix, Nord, Daylight. Français / English.</span><span class="en">Dracula, Cyberdog Neon, Synthwave, Matrix, Nord, Daylight. French / English.</span></p></div>
+      <div class="card"><div class="ic">🔄</div><h3><span class="fr">Mises à jour auto</span><span class="en">Auto-update</span></h3><p><span class="fr">Vérification automatique des nouvelles versions, installation en un clic sur Windows et Linux.</span><span class="en">Automatic new-version checks, one-click install on Windows and Linux.</span></p></div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <h2><span class="fr">Aperçu</span><span class="en">Screenshots</span></h2>
+    <div class="gallery">
+      <figure><img src="assets/screen-autocomplete.png" alt="" loading="lazy" /><figcaption><span class="fr">Autocomplétion issue du WSDL</span><span class="en">WSDL-driven autocompletion</span></figcaption></figure>
+      <figure><img src="assets/screen-runner.png" alt="" loading="lazy" /><figcaption><span class="fr">Runner — thème Cyberdog Neon</span><span class="en">Runner — Cyberdog Neon theme</span></figcaption></figure>
+      <figure><img src="assets/screen-environments.png" alt="" loading="lazy" /><figcaption><span class="fr">Environnements globaux</span><span class="en">Global environments</span></figcaption></figure>
+      <figure><img src="assets/screen-request.png" alt="" loading="lazy" /><figcaption><span class="fr">Requête & réponse</span><span class="en">Request & response</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <h2>Installation</h2>
+    <div class="install">
+      <div class="card">
+        <h3>macOS</h3>
+        <p><span class="fr">Les builds ne sont pas signés. Après avoir copié l'app dans Applications :</span><span class="en">Builds are not signed. After copying the app to Applications:</span></p>
+        <pre>xattr -cr /Applications/CyberSoap.app</pre>
+      </div>
+      <div class="card">
+        <h3>Windows</h3>
+        <p><span class="fr">L'installeur n'est pas signé : SmartScreen → « Informations complémentaires » → « Exécuter quand même ».</span><span class="en">The installer is not signed: SmartScreen → "More info" → "Run anyway".</span></p>
+      </div>
+      <div class="card">
+        <h3>Linux</h3>
+        <pre>chmod +x CyberSoap-*.AppImage
+./CyberSoap-*.AppImage</pre>
+      </div>
+    </div>
+    <div class="all-assets" id="assets"></div>
+  </section>
+
+  <footer>
+    CyberSoap — MIT · <a href="https://github.com/pickywawa/cybersoap">github.com/pickywawa/cybersoap</a> · <a href="https://github.com/pickywawa/cybersoap/releases"><span class="fr">Toutes les versions</span><span class="en">All releases</span></a>
+  </footer>
+
+  <script>
+    // language toggle
+    const setLang = (l) => {
+      document.body.dataset.lang = l;
+      document.documentElement.lang = l;
+      document.querySelectorAll('.lang button').forEach((b) => b.classList.toggle('on', b.dataset.l === l));
+      try { localStorage.setItem('lang', l); } catch (_) {}
+    };
+    document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.l)));
+    let saved = null;
+    try { saved = localStorage.getItem('lang'); } catch (_) {}
+    setLang(saved || ((navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en'));
+
+    // download links from the latest GitHub release
+    const ua = navigator.userAgent.toLowerCase();
+    const os = ua.includes('mac') ? 'mac' : ua.includes('win') ? 'win' : 'linux';
+    const pickers = {
+      mac: (a) => a.find((x) => /arm64\.dmg$/.test(x.name)) || a.find((x) => /\.dmg$/.test(x.name)),
+      win: (a) => a.find((x) => /\.exe$/.test(x.name)),
+      linux: (a) => a.find((x) => /\.AppImage$/.test(x.name))
+    };
+    const label = { mac: 'macOS', win: 'Windows', linux: 'Linux' };
+    fetch('https://api.github.com/repos/pickywawa/cybersoap/releases/latest')
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((rel) => {
+        const assets = rel.assets || [];
+        document.getElementById('version').textContent = `${rel.tag_name} · ${new Date(rel.published_at).toLocaleDateString()}`;
+        for (const el of document.querySelectorAll('[data-os]')) {
+          const a = pickers[el.dataset.os](assets);
+          if (a) { el.href = a.browser_download_url; el.querySelector('[data-file]').textContent = a.name; }
+        }
+        const main = pickers[os](assets);
+        if (main) {
+          document.getElementById('dl-main').href = main.browser_download_url;
+          document.getElementById('dl-main-file').textContent = `${label[os]} · ${main.name}`;
+        }
+        const files = assets.filter((a) => !/\.(yml|blockmap)$/.test(a.name));
+        if (files.length) {
+          document.getElementById('assets').innerHTML =
+            '<p>' + (document.body.dataset.lang === 'fr' ? 'Tous les fichiers de la version :' : 'All files of this release:') + '</p><ul>' +
+            files.map((a) => `<li><a href="${a.browser_download_url}">${a.name}</a></li>`).join('') + '</ul>';
+        }
+      })
+      .catch(() => {});
+  </script>
+</body>
+</html>
