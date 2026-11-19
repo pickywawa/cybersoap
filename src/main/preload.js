@@ -44,6 +44,8 @@ contextBridge.exposeInMainWorld('api', {
   previewWsdl: (opts) => call('wsdl:preview', opts),
   importWsdl: (opts) => call('wsdl:import', opts),
   updateFromWsdl: (dir, source, auth) => call('wsdl:update', dir, source, auth),
+  listOperations: (dir) => call('operations:list', dir),
+  createFromOperations: (dir, ids) => call('operations:create', dir, ids),
 
   send: (req) => call('soap:send', req),
   cancel: (id) => call('soap:cancel', id),

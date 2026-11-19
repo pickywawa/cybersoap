@@ -43,7 +43,7 @@
     <div>
       <p class="eyebrow"><span class="live-dot"></span><span data-fr="Le client SOAP qui a du style" data-en="The SOAP client with style">Le client SOAP qui a du style</span></p>
       <h1><span data-fr="Vos web services SOAP." data-en="Your SOAP web services.">Vos web services SOAP.</span><br><em data-fr="Enfin testables." data-en="Finally testable.">Enfin testables.</em></h1>
-      <p class="intro" data-fr="Collez l’URL d’un WSDL : chaque opération devient une requête prête à lancer. Un vrai éditeur XML, des assertions, un runner. Tout ce que vous aimiez dans SoapUI, sans la lourdeur." data-en="Paste a WSDL URL: every operation becomes a ready-to-run request. A real XML editor, assertions, a runner. Everything you liked in SoapUI, without the weight.">Collez l’URL d’un WSDL : chaque opération devient une requête prête à lancer. Un vrai éditeur XML, des assertions, un runner. Tout ce que vous aimiez dans SoapUI, sans la lourdeur.</p>
+      <p class="intro" data-fr="Collez l’URL d’un WSDL, choisissez vos opérations : chaque requête est prête à lancer. Un vrai éditeur XML, des assertions, un runner. Tout ce que vous aimiez dans SoapUI, sans la lourdeur." data-en="Paste a WSDL URL, pick your operations: every request is ready to run. A real XML editor, assertions, a runner. Everything you liked in SoapUI, without the weight.">Collez l’URL d’un WSDL, choisissez vos opérations : chaque requête est prête à lancer. Un vrai éditeur XML, des assertions, un runner. Tout ce que vous aimiez dans SoapUI, sans la lourdeur.</p>
       <div class="hero-actions">
         <a href="#download" class="button" data-fr="Télécharger CyberSoap ↓" data-en="Download CyberSoap ↓">Télécharger CyberSoap ↓</a>
         <a href="#inside" class="text-link" data-fr="Voir l’application ↗" data-en="See the app ↗">Voir l’application ↗</a>
@@ -92,7 +92,7 @@ Sans friction.</h2>
     <article class="feature reveal">
       <span class="feature-icon">⚡</span>
       <h3 data-fr="Import WSDL" data-en="WSDL import">Import WSDL</h3>
-      <p data-fr="WSDL 1.1, SOAP 1.1 et 1.2, document et rpc, imports XSD. Chaque opération devient une requête, avec ses commentaires « Optional » façon SoapUI." data-en="WSDL 1.1, SOAP 1.1 and 1.2, document and rpc, XSD imports. Each operation becomes a request, with SoapUI-style “Optional” comments.">WSDL 1.1, SOAP 1.1 et 1.2, document et rpc, imports XSD. Chaque opération devient une requête, avec ses commentaires « Optional » façon SoapUI.</p>
+      <p data-fr="WSDL 1.1, SOAP 1.1 et 1.2, document et rpc, imports XSD. La collection liste les opérations disponibles : créez une requête, ou toutes, en un clic." data-en="WSDL 1.1, SOAP 1.1 and 1.2, document and rpc, XSD imports. The collection lists the available operations: create one request, or all of them, in one click.">WSDL 1.1, SOAP 1.1 et 1.2, document et rpc, imports XSD. La collection liste les opérations disponibles : créez une requête, ou toutes, en un clic.</p>
     </article>
     <article class="feature reveal">
       <span class="feature-icon">✓</span>
@@ -151,15 +151,16 @@ Sans friction.</h2>
 Rien de trop.</h2>
     </div>
     <div class="view-tabs" role="tablist">
-      <button type="button" role="tab" data-view="request" id="tab-request" aria-selected="true" data-fr="Requête" data-en="Request">Requête</button>
+      <button type="button" role="tab" data-view="operations" id="tab-operations" aria-selected="true" data-fr="Opérations" data-en="Operations">Opérations</button>
+      <button type="button" role="tab" data-view="request" id="tab-request" aria-selected="false" data-fr="Requête" data-en="Request">Requête</button>
       <button type="button" role="tab" data-view="autocomplete" id="tab-autocomplete" aria-selected="false" data-fr="Autocomplétion" data-en="Autocompletion">Autocomplétion</button>
       <button type="button" role="tab" data-view="variables" id="tab-variables" aria-selected="false">Variables</button>
       <button type="button" role="tab" data-view="runner" id="tab-runner" aria-selected="false">Runner</button>
       <button type="button" role="tab" data-view="environments" id="tab-environments" aria-selected="false" data-fr="Environnements" data-en="Environments">Environnements</button>
       <button type="button" role="tab" data-view="light" id="tab-light" aria-selected="false" data-fr="Thème clair" data-en="Light theme">Thème clair</button>
     </div>
-    <div id="view-panel" role="tabpanel" aria-labelledby="tab-request" class="reveal">
-      <div class="gallery-frame"><button type="button" class="screenshot-open" id="gallery-open" data-image="assets/screen-request.png"><img id="gallery-image" src="assets/screen-request.png" alt="" width="1440" height="900" loading="lazy"></button></div>
+    <div id="view-panel" role="tabpanel" aria-labelledby="tab-operations" class="reveal">
+      <div class="gallery-frame"><button type="button" class="screenshot-open" id="gallery-open" data-image="assets/screen-operations.png"><img id="gallery-image" src="assets/screen-operations.png" alt="" width="1440" height="900" loading="lazy"></button></div>
       <p class="gallery-caption" id="gallery-caption"></p>
     </div>
   </div>
@@ -174,7 +175,7 @@ Une réponse.</h2>
     <div class="connection-line" aria-hidden="true"><code>WSDL</code><span></span><b>→</b><span></span><code>200 OK</code></div>
   </div>
   <ol class="steps reveal">
-    <li><span>01</span><div><h3 data-fr="Importez le WSDL" data-en="Import the WSDL">Importez le WSDL</h3><p data-fr="Une URL ou un fichier. CyberSoap suit les imports XSD et génère une requête par opération." data-en="A URL or a file. CyberSoap follows XSD imports and generates one request per operation.">Une URL ou un fichier. CyberSoap suit les imports XSD et génère une requête par opération.</p></div></li>
+    <li><span>01</span><div><h3 data-fr="Importez le WSDL" data-en="Import the WSDL">Importez le WSDL</h3><p data-fr="Une URL ou un fichier. CyberSoap suit les imports XSD et liste les opérations ; créez les requêtes dont vous avez besoin." data-en="A URL or a file. CyberSoap follows XSD imports and lists the operations; create the requests you need.">Une URL ou un fichier. CyberSoap suit les imports XSD et liste les opérations ; créez les requêtes dont vous avez besoin.</p></div></li>
     <li><span>02</span><div><h3 data-fr="Remplissez les « ? »" data-en="Fill in the “?”">Remplissez les « ? »</h3><p data-fr="F2 saute d’un « ? » à l’autre, l’autocomplétion fait le reste. Les {{variables}} viennent de vos environnements." data-en="F2 jumps from one “?” to the next, autocompletion does the rest. {{variables}} come from your environments.">F2 saute d’un « ? » à l’autre, l’autocomplétion fait le reste. Les {{variables}} viennent de vos environnements.</p></div></li>
     <li><span>03</span><div><h3 data-fr="Envoyez et vérifiez" data-en="Send and check">Envoyez et vérifiez</h3><p data-fr="⌘/Ctrl + Entrée. La réponse formatée s’affiche à droite, les assertions vous disent si tout va bien." data-en="⌘/Ctrl + Enter. The formatted response shows on the right, assertions tell you whether all is well.">⌘/Ctrl + Entrée. La réponse formatée s’affiche à droite, les assertions vous disent si tout va bien.</p></div></li>
   </ol>

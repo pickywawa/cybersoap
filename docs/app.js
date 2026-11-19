@@ -10,6 +10,7 @@ try {
 } catch (_) {}
 
 const views = {
+  operations: { image: 'assets/screen-operations.png', fr: 'La collection liste les opérations du WSDL : détail à droite, création d’une requête ou de toutes en un clic.', en: 'The collection lists the WSDL operations: details on the right, create one request or all of them in one click.' },
   request: { image: 'assets/screen-request.png', fr: 'Requête à gauche, réponse formatée à droite, statut, temps, taille et assertions en un coup d’œil.', en: 'Request on the left, formatted response on the right, status, time, size and assertions at a glance.' },
   autocomplete: { image: 'assets/screen-autocomplete.png', fr: 'L’autocomplétion ne propose que les éléments valides à cet endroit, d’après le schéma du WSDL.', en: 'Autocompletion only offers the elements valid at this position, based on the WSDL schema.' },
   variables: { image: 'assets/screen-forecast.png', fr: '{{city}} vient des variables globales, l’environnement actif « dev » est choisi dans la barre du haut.', en: '{{city}} comes from global variables, the active “dev” environment is picked in the top bar.' },
@@ -17,7 +18,7 @@ const views = {
   environments: { image: 'assets/screen-environments.png', fr: 'Variables globales et environnements partagés par toutes les collections.', en: 'Global variables and environments shared by all collections.' },
   light: { image: 'assets/screen-light.png', fr: 'Côté clair : Alucard, Daylight, Solar Flare, Frost Byte, Sakura Neon.', en: 'Light side: Alucard, Daylight, Solar Flare, Frost Byte, Sakura Neon.' }
 };
-let selectedView = 'request';
+let selectedView = 'operations';
 const $ = (s) => document.querySelector(s);
 
 function updateView(key) {

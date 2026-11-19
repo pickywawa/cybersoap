@@ -6,7 +6,7 @@
 
 <p align="center">
   Client desktop open source pour tester, déboguer et automatiser vos web services SOAP.<br/>
-  Importez un WSDL : chaque opération devient une requête prête à lancer.
+  Importez un WSDL, choisissez les opérations : chaque requête est prête à lancer.
 </p>
 
 <p align="center">
@@ -110,9 +110,10 @@ Sur certaines distributions, les AppImage nécessitent `libfuse2` (`sudo apt ins
 
 1. Cliquez sur **Importer un WSDL** (écran d'accueil, ou icône ⬇ en haut de la liste des collections).
 2. Collez l'URL du WSDL (ex. `https://hote/service?wsdl`) ou choisissez un fichier, puis **Analyser** pour voir les opérations.
-3. **Générer la collection** : une requête est créée pour chaque opération, avec l'URL du endpoint et le SOAPAction.
-4. Ouvrez une requête, remplacez les `?` par vos valeurs (<kbd>F2</kbd> saute au suivant), puis **Envoyer** (<kbd>⌘/Ctrl</kbd> + <kbd>Entrée</kbd>).
-5. La réponse s'affiche à droite avec le statut, le temps, la taille et le résultat des assertions.
+3. **Créer la collection** : la page de la collection s'ouvre sur la liste des **opérations** du WSDL. Aucune requête n'est encore créée.
+4. Cliquez sur une opération pour voir son détail, puis **Créer la requête** (ou **Tout créer**). La requête s'ouvre avec l'URL du endpoint, le SOAPAction et l'enveloppe générée.
+5. Remplacez les `?` par vos valeurs (<kbd>F2</kbd> saute au suivant), puis **Envoyer** (<kbd>⌘/Ctrl</kbd> + <kbd>Entrée</kbd>).
+6. La réponse s'affiche à droite avec le statut, le temps, la taille et le résultat des assertions.
 
 ## Guide
 
@@ -120,10 +121,24 @@ Sur certaines distributions, les AppImage nécessitent `libfuse2` (`sudo apt ins
 
 - Sources : URL `http(s)://…`, chemin de fichier local ou `file://`. Les `wsdl:import`, `xsd:import`, `xsd:include` et `xsd:redefine` sont suivis (chemins relatifs résolus).
 - WSDL protégé : dépliez « Identifiants optionnels » pour fournir un login / mot de passe Basic.
-- Bindings : un sous-dossier est créé par interface quand le WSDL en déclare plusieurs (ex. `ServiceSoap` et `ServiceSoap12`).
-- Génération : les éléments optionnels sont précédés de `<!--Optional:-->`, les répétitions de `<!--Zero or more repetitions:-->`, les `choice` d'un commentaire explicatif. Les valeurs sont des `?` à remplacer.
-- Chaque requête générée contient deux assertions par défaut : **pas de SOAP Fault** et **statut HTTP 200**.
-- **Mettre à jour depuis le WSDL** (clic droit sur la collection, ou onglet WSDL des paramètres de collection) : relit le WSDL, ajoute les opérations manquantes et rafraîchit l'autocomplétion, sans toucher à vos requêtes existantes.
+- L'import crée la collection et enregistre la **liste des opérations** disponibles (`operations.json`), sans créer de requête.
+- Enveloppes : les éléments optionnels sont précédés de `<!--Optional:-->`, les répétitions de `<!--Zero or more repetitions:-->`, les `choice` d'un commentaire explicatif. Les valeurs sont des `?` à remplacer.
+- **Mettre à jour depuis le WSDL** (clic droit sur la collection, ou onglet WSDL de la collection) : relit le WSDL, rafraîchit la liste des opérations et l'autocomplétion, sans toucher à vos requêtes existantes.
+
+### Opérations et création des requêtes
+
+Cliquer sur une collection ouvre sa page : en haut, un en-tête compact (nom, nombre de requêtes et de variables, version SOAP, description, emplacement) ; en dessous, l'onglet **Opérations**.
+
+![Opérations du WSDL](docs/assets/screen-operations.png)
+
+- **À gauche**, la liste des opérations proposées par le WSDL (regroupées par interface quand il y en a plusieurs), avec un filtre. Une coche ✓ indique combien de requêtes ont déjà été créées depuis l'opération.
+- **À droite**, le détail de l'opération sélectionnée : endpoint, SOAPAction, documentation et enveloppe générée.
+- **Créer la requête** (bouton du détail, ou ⊕ au survol d'une ligne) : crée le fichier et l'ouvre directement, prêt à être envoyé.
+- **Tout créer** : crée une requête par opération (ou seulement celles qui correspondent au filtre).
+- Une opération peut être créée autant de fois que nécessaire, à tout moment : si le nom existe déjà, il est numéroté (`GetWeather (2)`).
+- Les nouvelles requêtes sont ajoutées **à la fin** de la collection, sans tri automatique.
+- Chaque requête créée contient deux assertions par défaut : **pas de SOAP Fault** et **statut HTTP 200**.
+- Le runner n'exécute que les requêtes créées, pas les opérations disponibles.
 - Non supporté : WSDL 2.0, MTOM / pièces jointes.
 
 ### Éditeur XML
@@ -259,6 +274,7 @@ collections/                  ← dossier de travail
       …
   MonService/                 ← 1 collection = 1 dossier
     collection.json           ← nom, variables, en-têtes, auth, source WSDL, ordre manuel
+    operations.json           ← opérations disponibles du WSDL (requêtes à créer)
     schema.json               ← schéma d'autocomplétion généré depuis le WSDL
     wsdl/                     ← copie du WSDL et des XSD importés
     MonServiceSoap/           ← un sous-dossier par interface (si plusieurs bindings)

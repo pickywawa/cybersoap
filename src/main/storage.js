@@ -113,6 +113,7 @@ function walk(dir) {
         path: full,
         seq: r.seq || 0,
         operation: r.operation || '',
+        binding: r.binding || '',
         soapVersion: r.soapVersion || '1.1'
       });
     }
@@ -155,6 +156,13 @@ function renameInOrder(dir, oldBase, newBase) {
   const order = readOrder(dir);
   if (!order) return;
   writeOrder(dir, order.map((k) => (k === oldBase ? newBase : k)));
+}
+
+/** Put an entry at the end of a directory's manual order (keeps the current visible order) */
+function appendToOrder(dir, base) {
+  const current = walk(dir).map((it) => path.basename(it.path)).filter((n) => n !== base);
+  current.push(base);
+  writeOrder(dir, current);
 }
 
 /** Place src before/after target (moving it to target's folder if needed). Returns the new path of src. */
@@ -514,6 +522,7 @@ module.exports = {
   deleteItem,
   moveItem,
   reorderItem,
+  appendToOrder,
   sortAlpha,
   collectRequests,
   bundleCollection,

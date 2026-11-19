@@ -26,6 +26,7 @@ export const useStore = create((set, get) => ({
   appInfo: null,
   collections: [],
   tree: [],
+  catalogVersion: 0,
   tabs: [],
   activeTab: null,
   docs: {},
@@ -509,9 +510,25 @@ export const useStore = create((set, get) => ({
       const r = await api.updateFromWsdl(dir);
       await get().reloadSchema(dir);
       await get().refresh();
-      get().toast(get().t('col.wsdlUpdated', { n: r.added }), 'success');
+      set((s) => ({ catalogVersion: s.catalogVersion + 1 }));
+      get().toast(get().t('col.wsdlUpdated', { n: r.total, added: r.added }), 'success');
     } catch (e) {
       get().error(e);
+    }
+  },
+
+  /** Create request files from WSDL operations (appended at the end of the collection) */
+  async createFromOperations(dir, ids, open) {
+    try {
+      const paths = await api.createFromOperations(dir, ids);
+      get().toggleExpanded(dir, true);
+      await get().refresh();
+      if (open && paths.length === 1) await get().openRequest(paths[0]);
+      else if (paths.length) get().toast(get().t('ops.createdToast', { n: paths.length }), 'success');
+      return paths;
+    } catch (e) {
+      get().error(e);
+      return [];
     }
   }
 }));

@@ -152,6 +152,8 @@ function registerIpc() {
   handle('wsdl:preview', ({ source, auth }) => importer.previewWsdl(source, auth));
   handle('wsdl:import', (opts) => importer.importWsdl(root(), opts));
   handle('wsdl:update', (dir, source, auth) => importer.updateFromWsdl(dir, source, auth));
+  handle('operations:list', (dir) => importer.readOperations(dir));
+  handle('operations:create', (dir, ids) => importer.createFromOperations(dir, ids));
 
   handle('update:state', () => updater.getState());
   handle('update:check', () => updater.check(true));

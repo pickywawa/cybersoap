@@ -33,53 +33,88 @@ function defaultAssertions() {
   ];
 }
 
-/** Import a WSDL into a brand new collection */
+const OPERATIONS_FILE = 'operations.json';
+
+/** Catalog of the operations a WSDL offers: kept in the collection, requests are created on demand */
+function buildCatalog(parsed) {
+  const operations = [];
+  for (const iface of parsed.interfaces) {
+    for (const op of iface.operations) {
+      operations.push({
+        id: `${iface.name}#${op.name}`,
+        name: op.name,
+        binding: iface.name,
+        soapVersion: iface.soapVersion,
+        endpoint: iface.endpoint,
+        soapAction: op.soapAction || '',
+        style: op.style,
+        doc: op.doc || '',
+        body: op.body
+      });
+    }
+  }
+  return { version: 1, generatedAt: new Date().toISOString(), operations };
+}
+
+function readOperations(dir) {
+  const data = storage.readJson(path.join(dir, OPERATIONS_FILE), null);
+  return data && Array.isArray(data.operations) ? data.operations : [];
+}
+
+/** Import a WSDL into a brand new collection (operations catalog only, no request is created) */
 async function importWsdl(root, { source, name, auth }) {
   const parsed = await parseWsdl(source, (loc) => soap.fetchText(loc, auth));
   const colName = name || parsed.name || nameFromSource(source);
-  const ifaceSummary = parsed.interfaces.map((i) => ({
-    name: i.name,
-    soapVersion: i.soapVersion,
-    endpoints: i.endpoints
-  }));
   const { path: dir, meta } = storage.createCollection(root, colName, {
     soapVersion: parsed.interfaces[0] ? parsed.interfaces[0].soapVersion : '1.1',
     wsdl: {
       source,
       targetNamespace: parsed.targetNamespace,
       importedAt: new Date().toISOString(),
-      interfaces: ifaceSummary
+      interfaces: parsed.interfaces.map((i) => ({ name: i.name, soapVersion: i.soapVersion, endpoints: i.endpoints }))
     }
   });
   saveWsdlDocuments(dir, parsed.documents);
   storage.writeSchema(dir, parsed.schema);
-  let count = 0;
-  const multi = parsed.interfaces.length > 1;
-  for (const iface of parsed.interfaces) {
-    const target = multi ? storage.createFolder(dir, iface.name) : dir;
-    iface.operations.forEach((op, idx) => {
-      storage.createRequest(target, op.name, requestFromOperation(iface, op, idx));
-      count++;
-    });
-  }
-  return { path: dir, meta, count, warnings: parsed.warnings };
+  const catalog = buildCatalog(parsed);
+  storage.writeJson(path.join(dir, OPERATIONS_FILE), catalog);
+  return { path: dir, meta, count: catalog.operations.length, warnings: parsed.warnings };
 }
 
-function requestFromOperation(iface, op, idx) {
+function requestFromOperation(op) {
   return {
-    seq: idx + 1,
-    url: iface.endpoint,
-    soapVersion: iface.soapVersion,
+    url: op.endpoint || '',
+    soapVersion: op.soapVersion,
     soapAction: op.soapAction || '',
     operation: op.name,
-    binding: iface.name,
+    binding: op.binding,
     body: op.body,
     docs: op.doc || '',
     assertions: defaultAssertions()
   };
 }
 
-/** Re-read the WSDL of an existing collection; add missing operations and refresh schema */
+/**
+ * Create request files from catalog operations, at the end of the collection (manual order),
+ * numbering the name when a request with the same name already exists. Returns the new paths.
+ */
+function createFromOperations(dir, ids) {
+  const ops = readOperations(dir);
+  const created = [];
+  for (const id of ids) {
+    const op = ops.find((o) => o.id === id);
+    if (!op) continue;
+    let name = op.name;
+    let i = 2;
+    while (fs.existsSync(path.join(dir, storage.safeName(name) + storage.REQ_EXT))) name = `${op.name} (${i++})`;
+    const { path: file } = storage.createRequest(dir, name, requestFromOperation(op));
+    storage.appendToOrder(dir, path.basename(file));
+    created.push(file);
+  }
+  return created;
+}
+
+/** Re-read the WSDL of an existing collection: refresh the operations catalog, schema and WSDL copy */
 async function updateFromWsdl(dir, sourceOverride, auth) {
   const meta = storage.readCollection(dir);
   const source = sourceOverride || (meta && meta.wsdl && meta.wsdl.source);
@@ -88,26 +123,9 @@ async function updateFromWsdl(dir, sourceOverride, auth) {
   storage.writeSchema(dir, parsed.schema);
   fs.rmSync(path.join(dir, 'wsdl'), { recursive: true, force: true });
   saveWsdlDocuments(dir, parsed.documents);
-
-  const existing = new Set();
-  for (const f of storage.collectRequests(dir)) {
-    const r = storage.readJson(f, {});
-    existing.add(`${r.binding || ''}|${r.operation || ''}`);
-  }
-  let added = 0;
-  const multi = parsed.interfaces.length > 1;
-  for (const iface of parsed.interfaces) {
-    let target = dir;
-    if (multi) {
-      target = path.join(dir, storage.safeName(iface.name));
-      if (!fs.existsSync(target)) target = storage.createFolder(dir, iface.name);
-    }
-    iface.operations.forEach((op, idx) => {
-      if (existing.has(`${iface.name}|${op.name}`)) return;
-      storage.createRequest(target, op.name, requestFromOperation(iface, op, idx));
-      added++;
-    });
-  }
+  const before = new Set(readOperations(dir).map((o) => o.id));
+  const catalog = buildCatalog(parsed);
+  storage.writeJson(path.join(dir, OPERATIONS_FILE), catalog);
   meta.wsdl = {
     ...(meta.wsdl || {}),
     source,
@@ -116,7 +134,11 @@ async function updateFromWsdl(dir, sourceOverride, auth) {
     interfaces: parsed.interfaces.map((i) => ({ name: i.name, soapVersion: i.soapVersion, endpoints: i.endpoints }))
   };
   storage.saveCollection(dir, meta);
-  return { added, warnings: parsed.warnings };
+  return {
+    total: catalog.operations.length,
+    added: catalog.operations.filter((o) => !before.has(o.id)).length,
+    warnings: parsed.warnings
+  };
 }
 
 /** Preview the operations of a WSDL without creating anything */
@@ -203,6 +225,7 @@ async function importSoapUi(root, file) {
       const parsed = await parseWsdl(wsdlSource, (loc) => soap.fetchText(loc));
       storage.writeSchema(dir, parsed.schema);
       saveWsdlDocuments(dir, parsed.documents);
+      storage.writeJson(path.join(dir, OPERATIONS_FILE), buildCatalog(parsed));
       const meta = storage.readCollection(dir);
       meta.wsdl = { source: wsdlSource, importedAt: new Date().toISOString() };
       storage.saveCollection(dir, meta);
@@ -213,4 +236,4 @@ async function importSoapUi(root, file) {
   return { path: dir, count };
 }
 
-module.exports = { importWsdl, updateFromWsdl, previewWsdl, importSoapUi };
+module.exports = { importWsdl, updateFromWsdl, previewWsdl, importSoapUi, readOperations, createFromOperations };

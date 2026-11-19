@@ -73,7 +73,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await click(`[...document.querySelectorAll('.modal-foot .btn')].find(b => b.textContent.includes('Analy'))`);
   await sleep(1800);
   await click(`document.querySelector('.modal-foot .btn.primary')`);
-  await sleep(1500);
+  await sleep(1300);
+
+  // the collection page lists the WSDL operations: look at one, then create them all
+  await click(`[...document.querySelectorAll('.op-row')].find(r => r.textContent.includes('GetForecast'))`);
+  await sleep(1300);
+  await click(`[...document.querySelectorAll('.op-row')].find(r => r.textContent.includes('GetWeather'))`);
+  await sleep(1100);
+  await click(`document.querySelector('.ops-create-all')`);
+  await sleep(1200);
 
   // open the GetWeather request
   await click(`[...document.querySelectorAll('.tree-row.request')].find(r => r.textContent.includes('GetWeather'))`);
@@ -159,6 +167,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const theme = (t) => js(`window.cybersoap.store.getState().updateSettings({ theme: '${t}' })`);
     const openReq = (name) =>
       js(`(async () => { const s = window.cybersoap.store.getState(); const r = s.collections[0].children.find(c => c.name === '${name}'); await s.openRequest(r.path); })()`);
+
+    await js(`(async () => { const s = window.cybersoap.store.getState(); s.openCollectionSettings(s.collections[0].path) })()`);
+    await sleep(400);
+    await click(`[...document.querySelectorAll('.op-row')].find(r => r.textContent.includes('GetForecast'))`);
+    await shot('screen-operations.png');
 
     await openReq('GetWeather');
     await shot('screen-request.png');
